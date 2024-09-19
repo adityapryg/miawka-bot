@@ -254,11 +254,12 @@ async def on_message(message):
 
                 if user_id not in conversation_histories:
                     conversation_histories[user_id] = []
+
                 conversation_histories[user_id].append({"role": "user", "content": message.content})
                 conversation_histories[user_id].append({"role": "assistant", "content": answer})
 
                 await message.reply(answer)
-            except openai.error.OpenAIError as e:
+            except OpenAIError as e:
                 await message.reply("Maaf, aku tidak paham yang kamu maksud.")
                 print(f"OpenAI API error: {e}")
             except Exception as e:
