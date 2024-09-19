@@ -190,8 +190,10 @@ async def on_message(message):
             else:
                 response = random.choice(ROASTING_RESPONSES)
             
-            await message.channel.trigger_typing()
-            await message.reply(response)
+            # Simulate typing before replying
+            async with message.channel.typing():
+                await message.reply(response)
+        
 
         content_lower = message.content.lower()
 
