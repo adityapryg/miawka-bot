@@ -3,3 +3,4 @@ openai
 langdetect
 python-dotenv
 textblob
+py-cord
