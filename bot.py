@@ -193,7 +193,6 @@ async def on_message(message):
             # Simulate typing before replying
             async with message.channel.typing():
                 await message.reply(response)
-        
 
         content_lower = message.content.lower()
 
