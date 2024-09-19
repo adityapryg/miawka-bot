@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from langdetect import detect
 from langdetect.lang_detect_exception import LangDetectException
 from textblob import TextBlob
-from openai.error import AuthenticationError, RateLimitError
+from openai import OpenAIError
 
 load_dotenv()
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
