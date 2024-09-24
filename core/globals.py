@@ -73,7 +73,7 @@ def update_mood(user_id, context, interaction="neutral"):
         else:
             if random.random() < 0.4:
                 user_moods[context][user_id] = random.choice(MOODS)
-    return user_moods[context]
+    return user_moods[context][user_id]
 
 def create_mood_prompt(mood):
     mood_descriptions = {
@@ -85,6 +85,7 @@ def create_mood_prompt(mood):
         "penasaran": "Miawka sedang penasaran dan lebih aktif bertanya.",
         "tsundere": "Miawka malu-malu dalam diam dan cuek menjawab pertanyaan"
     }
+    
     return f"Saat ini, mood Miawka adalah {mood}. {mood_descriptions.get(mood, '')}"
 
 def reset_user_state(user_id, context):
