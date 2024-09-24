@@ -311,9 +311,9 @@ async def ask_tutor_to_cat(ctx, *, message):
     try:
         # Call the OpenAI API to generate a response based on user's input
         response = openai.ChatCompletion.create(
-            model="gpt-4o-mini",
+            model="gpt-4",
             messages=conversation,  # Send only system prompt and user message
-            max_tokens=100,  # Adjust max tokens as needed
+            max_tokens=1500,  # Adjust max tokens as needed
             temperature=0.8,
             top_p=1
         )
