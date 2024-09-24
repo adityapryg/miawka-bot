@@ -34,15 +34,13 @@ MOODS = ["tenang", "kuudere", "cuek", "ceria", "penasaran", "tsundere", "mengant
 ROASTING_RESPONSES = [
     "Beli ciki beli koyo, datte kimi... yowaimo~",
     "Mainnya Hebat!",
-    "Oh, aku kira kucing saja yang malas, ternyata kamu juga.",
-    "Jika keheningan adalah emas, apa yang baru kamu katakan barusan?",
     "Wow, b aja",
     "wasting my time huh",
     "kummaha barudaaakkkk",
 ]
 
 # Peluang bot tiba-tiba mereply (misalnya 10%)
-REPLY_PROBABILITY = 0.07  # 7% kemungkinan Miawka akan mereply pesan apapun
+REPLY_PROBABILITY = 0.01  # 1% kemungkinan Miawka akan mereply pesan apapun
 
 SYSTEM_PROMPT = """
 Kamu adalah Miawka, seekor kucing yang ramah, keren, namun juga santai dan suka bercanda. Kamu sering acuh tak acuh, tetapi tetap perhatian jika diperlukan.
