@@ -295,7 +295,7 @@ async def chat_with_cat(ctx, *, message):
 
 @bot.command(name='tutornyaa')
 @commands.cooldown(rate=3, per=60, type=commands.BucketType.user)
-async def chat_with_cat(ctx, *, message):
+async def ask_tutor_to_cat(ctx, *, message):
     await ctx.trigger_typing()
     
     if not message:
