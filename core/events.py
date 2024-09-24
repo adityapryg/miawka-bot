@@ -28,12 +28,9 @@ def setup_event_handlers(bot):
         # Update cooldown timer
         user_cooldowns['miaw'][user_id] = now
 
-        # Add more complex logic here if needed
-        # Example: Random responses
-        if random.random() < 0.01:
-            await message.channel.send()
+        # TODO: Add more complex logic here if needed
 
-        if random.random() < REPLY_PROBABILITY:
+        if random.random() < 0.01:
             response = "Meow~";
             if len(re.findall(r'[A-Z]', message.content)) > 7:  # Jika pesan memiliki lebih dari 5 huruf kapital
                 response = "Wah, santai aja, gak perlu teriak-teriak."
