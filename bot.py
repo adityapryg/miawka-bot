@@ -301,9 +301,9 @@ async def chat_with_cat(ctx, *, message):
 
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o-mini",
             messages=conversation_histories[user_id],
-            max_tokens=100,
+            max_tokens=2048,
             temperature=0.3,
         )
         answer = response.choices[0].message.content
