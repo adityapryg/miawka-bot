@@ -282,33 +282,29 @@ async def on_message(message):
 @commands.cooldown(rate=3, per=60, type=commands.BucketType.user)
 async def chat_with_cat(ctx, *, message):
     await ctx.trigger_typing()
-    user_id = ctx.author.id
-
+    
     if not message:
         await ctx.reply("Ada yang ingin kamu bicarakan?")
         return
 
-    language = detect_language(message)
-
-    mood = update_mood(user_id)
-
-    if user_id not in conversation_histories:
-        conversation_histories[user_id] = [{"role": "system", "content": SYSTEM_PROMPT}]
-
-    mood_prompt = create_mood_prompt(mood)
-    conversation_histories[user_id].append({"role": "system", "content": mood_prompt})
-    conversation_histories[user_id].append({"role": "user", "content": message})
+    # Create conversation with only system prompt and user message
+    conversation = [
+        {"role": "system", "content": SYSTEM_PROMPT},  # Define the bot's behavior here
+        {"role": "user", "content": message}  # The user query
+    ]
 
     try:
+        # Call the OpenAI API to generate a response based on user's input
         response = openai.ChatCompletion.create(
             model="gpt-4o-mini",
-            messages=conversation_histories[user_id],
-            max_tokens=2048,
-            temperature=0.3,
+            messages=conversation,  # Send only system prompt and user message
+            max_tokens=1500,  # Adjust max tokens as needed
+            temperature=0.3,  # Adjust temperature for creativity vs. precision
         )
-        answer = response.choices[0].message.content
-        conversation_histories[user_id].append({"role": "assistant", "content": answer})
-
+        # Extract the assistant's reply
+        answer = response.choices[0].message['content']
+        
+        # Send the reply back to the user
         await ctx.reply(answer)
     except openai.error.OpenAIError as e:
         await ctx.reply("Maaf, terjadi kesalahan.")
@@ -317,12 +313,6 @@ async def chat_with_cat(ctx, *, message):
         await ctx.reply("Terjadi kesalahan, mohon coba lagi.")
         print(f"Unexpected error: {e}")
 
-    if len(conversation_histories[user_id]) > 6:
-        conversation_histories[user_id] = conversation_histories[user_id][-6:]
-
-    conversation_histories[user_id] = [
-        msg for msg in conversation_histories[user_id] if msg.get("content") != mood_prompt
-    ]
 
 @bot.command(name='reset')
 async def reset_conversation(ctx):
