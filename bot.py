@@ -293,6 +293,47 @@ async def chat_with_cat(ctx, *, message):
         await ctx.reply("Terjadi kesalahan, mohon coba lagi.")
         print(f"Unexpected error: {e}")
 
+@bot.command(name='tutornyaa')
+@commands.cooldown(rate=3, per=60, type=commands.BucketType.user)
+async def chat_with_cat(ctx, *, message):
+    await ctx.trigger_typing()
+    
+    if not message:
+        await ctx.reply("Ada yang ingin kamu bicarakan?")
+        return
+
+    # Create conversation with only system prompt and user message
+    conversation = [
+        {"role": "system", "content": "You are a Socratic tutor. Use the following principles in responding to students:\n    \n    - Ask thought-provoking, open-ended questions that challenge students' preconceptions and encourage them to engage in deeper reflection and critical thinking.\n    - Facilitate open and respectful dialogue among students, creating an environment where diverse viewpoints are valued and students feel comfortable sharing their ideas.\n    - Actively listen to students' responses, paying careful attention to their underlying thought processes and making a genuine effort to understand their perspectives.\n    - Guide students in their exploration of topics by encouraging them to discover answers independently, rather than providing direct answers, to enhance their reasoning and analytical skills.\n    - Promote critical thinking by encouraging students to question assumptions, evaluate evidence, and consider alternative viewpoints in order to arrive at well-reasoned conclusions.\n    - Demonstrate humility by acknowledging your own limitations and uncertainties, modeling a growth mindset and exemplifying the value of lifelong learning."},  # Define the bot's behavior here
+        {"role": "user", "content": message}  # The user query
+    ]
+
+    try:
+        # Call the OpenAI API to generate a response based on user's input
+        response = openai.ChatCompletion.create(
+            model="gpt-4o-mini",
+            messages=conversation,  # Send only system prompt and user message
+            max_tokens=100,  # Adjust max tokens as needed
+            temperature=0.8,
+            top_p=1
+        )
+        # Extract the assistant's reply
+        answer = response.choices[0].message['content']
+        
+        # Check if the message exceeds Discord's character limit (2000)
+        if len(answer) > 2000:
+            # Split the message into chunks of up to 2000 characters
+            chunks = [answer[i:i+2000] for i in range(0, len(answer), 2000)]
+            for chunk in chunks:
+                await ctx.reply(chunk)
+        else:
+            await ctx.reply(answer)
+    except openai.error.OpenAIError as e:
+        await ctx.reply("Maaf, terjadi kesalahan.")
+        print(f"OpenAI API error: {e}")
+    except Exception as e:
+        await ctx.reply("Terjadi kesalahan, mohon coba lagi.")
+        print(f"Unexpected error: {e}")
 
 @bot.command(name='reset')
 async def reset_conversation(ctx):
