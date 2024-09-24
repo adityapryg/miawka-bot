@@ -298,14 +298,20 @@ async def chat_with_cat(ctx, *, message):
         response = openai.ChatCompletion.create(
             model="gpt-4o-mini",
             messages=conversation,  # Send only system prompt and user message
-            max_tokens=1500,  # Adjust max tokens as needed
+            max_tokens=2048,  # Adjust max tokens as needed
             temperature=0.3,  # Adjust temperature for creativity vs. precision
         )
         # Extract the assistant's reply
         answer = response.choices[0].message['content']
         
-        # Send the reply back to the user
-        await ctx.reply(answer)
+        # Check if the message exceeds Discord's character limit (2000)
+        if len(answer) > 2000:
+            # Split the message into chunks of up to 2000 characters
+            chunks = [answer[i:i+2000] for i in range(0, len(answer), 2000)]
+            for chunk in chunks:
+                await ctx.reply(chunk)
+        else:
+            await ctx.reply(answer)
     except openai.error.OpenAIError as e:
         await ctx.reply("Maaf, terjadi kesalahan.")
         print(f"OpenAI API error: {e}")
