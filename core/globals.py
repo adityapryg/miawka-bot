@@ -8,6 +8,8 @@ load_dotenv()
 
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+PERPLEXITY_API_KEY = os.getenv('PERPLEXITY_API_KEY')
+LLM_PROVIDER = os.getenv('LLM_PROVIDER', 'openai').lower()  # Default to openai
 
 # Intent configurations
 intents = discord.Intents.default()
@@ -88,3 +90,23 @@ def reset_user_state(user_id, context):
         del user_moods[context][user_id]
     if user_id in user_cooldowns[context]:
         del user_cooldowns[context][user_id]
+
+def get_llm_config():
+    if LLM_PROVIDER == 'perplexity':
+        return {
+            'api_key': PERPLEXITY_API_KEY,
+            'base_url': 'https://api.perplexity.ai',
+            'models': {
+                'miaw': 'sonar',               # Lightweight chat model with grounding
+                'sensei': 'sonar-reasoning'    # Fast reasoning model for problem-solving
+            }
+        }
+    else:  # openai
+        return {
+            'api_key': OPENAI_API_KEY,
+            'base_url': None,
+            'models': {
+                'miaw': 'gpt-4o-mini',
+                'sensei': 'gpt-4'
+            }
+        }

@@ -1,5 +1,6 @@
 from datetime import datetime
 import random
+import re
 import openai
 from core.globals import (
     conversation_histories, user_cooldowns, user_moods,
@@ -9,7 +10,10 @@ from core.globals import (
 def setup_event_handlers(bot):
     @bot.event
     async def on_ready():
-        print(f'{bot.user.name} has connected to Discord!')
+        print(f'🎉 {bot.user.name} has connected to Discord!')
+        print(f'Bot ID: {bot.user.id}')
+        print(f'Connected to {len(bot.guilds)} guild(s)')
+        print('Bot is ready to receive commands!')
 
     @bot.event
     async def on_message(message):
