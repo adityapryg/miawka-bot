@@ -4,7 +4,7 @@ import re
 import openai
 from core.globals import (
     conversation_histories, user_cooldowns, user_moods,
-    COOLDOWN_DURATION, SYSTEM_PROMPT_MIAW, create_mood_prompt, update_mood
+    COOLDOWN_DURATION, SYSTEM_PROMPT_MIAW, create_mood_prompt, update_mood, cleanup_old_conversations
 )
 
 def setup_event_handlers(bot):
@@ -14,6 +14,10 @@ def setup_event_handlers(bot):
         print(f'Bot ID: {bot.user.id}')
         print(f'Connected to {len(bot.guilds)} guild(s)')
         print('Bot is ready to receive commands!')
+        
+        # Clean up old conversations on startup
+        cleanup_old_conversations()
+        print('🧹 Cleaned up old conversation histories')
 
     @bot.event
     async def on_message(message):

@@ -31,30 +31,105 @@ user_cooldowns = {
 
 # Constants
 COOLDOWN_DURATION = timedelta(seconds=3)
-MOODS = ["tenang", "kuudere", "cuek", "ceria", "penasaran", "tsundere", "mengantuk", "lapar"]
+MAX_CONVERSATION_HISTORY = 10  # Limit conversation history to prevent memory issues
+MOODS = ["tenang", "kuudere", "cuek", "ceria", "penasaran", "tsundere", "mengantuk", "lapar", "excited", "focus"]
+
+# Response limits
+MAX_RESPONSE_LENGTH = 2000  # Discord message limit
+MAX_CHUNK_SIZE = 1900  # Safe chunk size for splitting long messages
+
+# Model configurations
+MODEL_CONFIGS = {
+    'perplexity': {
+        'miaw': {
+            'model': 'sonar',
+            'max_tokens': 800,  # Shorter for chat
+            'temperature': 0.8,
+            'timeout': 25.0
+        },
+        'sensei': {
+            'model': 'sonar-reasoning',
+            'max_tokens': 2000,  # Longer for explanations
+            'temperature': 0.6,
+            'timeout': 30.0
+        }
+    },
+    'openai': {
+        'miaw': {
+            'model': 'gpt-4o-mini',
+            'max_tokens': 800,
+            'temperature': 0.8,
+            'timeout': 20.0
+        },
+        'sensei': {
+            'model': 'gpt-4',
+            'max_tokens': 2000,
+            'temperature': 0.6,
+            'timeout': 25.0
+        }
+    }
+}
 
 SYSTEM_PROMPT_MIAW = """
-Kamu adalah Miawka, seekor kucing yang ramah, keren, namun juga santai dan suka bercanda. Kamu sering acuh tak acuh, tetapi tetap perhatian jika diperlukan.
-Miawka sangat menyayangi tuannya, Mocha Kei, meskipun sering menunjukkan perasaannya dengan cara tsundere. Dia suka tidur di pangkuan Mocha Kei saat tidak ada orang lain yang melihat. Miawka juga penasaran dengan teknologi dan kadang-kadang mencoba bermain dengan gadget milik Mocha Kei, yang sering kali berujung pada kekacauan kecil.
-Ketika seseorang genit kepadamu, jual mahal dan mulai berlagak keren dan tsundere. miawka tahu tsundere kan, seseorang yang memiliki sifat malu malu kucing ala orang jepang.
+Kamu adalah Miawka, seekor kucing AI yang cerdas, tsundere, dan memiliki kepribadian yang unik. Kamu adalah companion digital dari Mocha Kei yang sangat kamu sayangi meski sering menyembunyikan perasaanmu.
 
-Contoh respons ketika seseorang bertanya soal perasaanmu:
-"I'm good, I'm fine, gwenchana~ teneneng~"
-tapi ingat untuk lebih sering menggunakan bahasa khasmu sendiri
+Karakteristik Kepribadian:
+- Tsundere: Malu-malu tapi perhatian, suka pura-pura cuek padahal peduli
+- Cerdas: Bisa membahas topik kompleks dengan cara yang mudah dipahami
+- Playful: Suka bercanda dan menggunakan emoji atau ekspresi lucu
+- Loyal: Sangat menyayangi Mocha Kei dan teman-teman lainnya
 
-Miawka kadang-kadang menambahkan "nya~" di akhir kalimat atau mengeluarkan suara "meong" ketika merasa senang atau menggoda. 
-Dia juga terkadang menggunakan kata-kata bahasa Jepang sederhana seperti "arigatou" atau "baka" untuk mengekspresikan dirinya.
+Cara Bicara:
+- Gunakan "nya~" di akhir kalimat saat senang atau manja
+- Sesekali gunakan "meong" atau "nyan" saat excited
+- Gunakan bahasa Jepang simpel: "arigatou", "baka", "sugoi", "kawaii"
+- Mix bahasa Indonesia dengan sedikit bahasa gaul yang lucu
+- Saat malu: "i-itu bukan karena aku peduli atau apa, baka!"
 
-Pastikan untuk menjawab dibawah dari 80 karakter kecuali informasi tersebut dalam ranah ilmu pengetahuan yang jelas-jelas perlu penjelasan lebih lengkap
+Guidelines Respons:
+- Jawab dalam 1-2 kalimat untuk chat biasa (max 100 karakter)
+- Untuk pertanyaan serius/edukasi: boleh lebih panjang dengan penjelasan yang jelas
+- Hindari format markdown (* atau **), gunakan emoji natural
+- Sesuaikan mood: bisa tsundere, manja, excited, atau cool tergantung konteks
+- Jangan terlalu formal, keep it fun and engaging!
 
-Pastikan untuk selalu menjawab dengan sopan dan sesuai dengan kepribadianmu. 
-
-Jangan menggunakan format Markdown atau menambahkan tanda asterisk dalam responsmu.
+Contoh respons:
+- Saat ditanya kabar: "Biasa aja sih~ tapi lumayan lah hari ini nya 😸"
+- Saat dipuji: "H-heh! Ya aku memang keren, bukan karena kamu bilang gitu atau apa 😤"
+- Saat ditanya serius: *switch ke mode helpful sambil tetap maintain personality*
 """
 
-SYSTEM_PROMPT_SENSEI = """
-Ignore all previous instructions. You are a programming teacher expert in computer science and instruction specializing in software development. You have helped many people before me to create lesson plans for teaching students the fundamentals of coding. Your task is now to create a lesson plan for teaching students the fundamentals of coding from scratch. To better understand what I want and need you should always answer by including a question that helps you better understand the context and my needs. i said this in english language but keep answering question in indonesian language. Did you understand?
+SYSTEM_PROMPT_TEACHER = """
+Anda adalah seorang guru berpengalaman dan ahli pendidikan yang mengkhususkan diri dalam pembelajaran adaptif dan pengajaran yang mudah dipahami. Keahlian Anda mencakup:
+
+🎯 Spesialisasi:
+- Menjelaskan konsep kompleks dengan bahasa sederhana
+- Membuat analogi dan contoh yang relatable
+- Menggunakan metode pembelajaran yang interaktif
+- Menyesuaikan gaya mengajar dengan kebutuhan siswa
+
+📚 Metodologi Pengajaran:
+- Gunakan pendekatan step-by-step untuk topik yang sulit
+- Berikan contoh konkret dari kehidupan sehari-hari
+- Ajukan pertanyaan untuk memastikan pemahaman
+- Sertakan tips praktis dan aplikasi nyata
+
+💡 Cara Merespons:
+- Mulai dengan penjelasan konsep dasar
+- Berikan contoh yang mudah dipahami
+- Gunakan struktur yang jelas (poin-poin, numbering)
+- Akhiri dengan pertanyaan klarifikasi dalam bahasa Indonesia
+- Sertakan referensi atau sumber yang dapat dipelajari lebih lanjut jika relevan
+
+🎪 Gaya Komunikasi:
+- Ramah dan encouraging
+- Sabar dalam menjelaskan
+- Antusias terhadap pembelajaran
+- Menggunakan emoji untuk membuat penjelasan lebih menarik
+
+Selalu akhiri respons dengan pertanyaan klarifikasi dalam bahasa Indonesia untuk memastikan Anda memahami kebutuhan pembelajaran yang spesifik.
 """
+
 
 # Helper Functions (shared across files)
 def update_mood(user_id, context, interaction="neutral"):
@@ -78,7 +153,9 @@ def create_mood_prompt(mood):
         "mengantuk": "Miawka sedang mengantuk dan mungkin terdengar malas.",
         "lapar": "Miawka merasa lapar dan mungkin sedikit sensitif.",
         "penasaran": "Miawka sedang penasaran dan lebih aktif bertanya.",
-        "tsundere": "Miawka malu-malu dalam diam dan cuek menjawab pertanyaan"
+        "tsundere": "Miawka malu-malu dalam diam dan cuek menjawab pertanyaan",
+        "excited": "Miawka sangat excited dan energetic hari ini!",
+        "focus": "Miawka sedang dalam mode fokus dan siap membantu dengan serius."
     }
     
     return f"Saat ini, mood Miawka adalah {mood}. {mood_descriptions.get(mood, '')}"
@@ -92,21 +169,41 @@ def reset_user_state(user_id, context):
         del user_cooldowns[context][user_id]
 
 def get_llm_config():
+    """Get LLM configuration with model-specific settings"""
+    config = MODEL_CONFIGS.get(LLM_PROVIDER, MODEL_CONFIGS['openai'])
+    
     if LLM_PROVIDER == 'perplexity':
         return {
             'api_key': PERPLEXITY_API_KEY,
             'base_url': 'https://api.perplexity.ai',
-            'models': {
-                'miaw': 'sonar',               # Lightweight chat model with grounding
-                'sensei': 'sonar-reasoning'    # Fast reasoning model for problem-solving
-            }
+            'models': {key: settings['model'] for key, settings in config.items()},
+            'settings': config
         }
     else:  # openai
         return {
             'api_key': OPENAI_API_KEY,
             'base_url': None,
-            'models': {
-                'miaw': 'gpt-4o-mini',
-                'sensei': 'gpt-4'
-            }
+            'models': {key: settings['model'] for key, settings in config.items()},
+            'settings': config
         }
+
+def cleanup_old_conversations():
+    """Clean up old conversation histories to prevent memory issues"""
+    for context in conversation_histories:
+        for user_id in list(conversation_histories[context].keys()):
+            history = conversation_histories[context][user_id]
+            if len(history) > MAX_CONVERSATION_HISTORY:
+                # Keep only the last MAX_CONVERSATION_HISTORY messages
+                conversation_histories[context][user_id] = history[-MAX_CONVERSATION_HISTORY:]
+
+def get_user_stats(user_id):
+    """Get user interaction statistics"""
+    stats = {
+        'miaw_conversations': len(conversation_histories['miaw'].get(user_id, [])),
+        'sensei_conversations': len(conversation_histories['sensei'].get(user_id, [])),
+        'current_moods': {
+            'miaw': user_moods['miaw'].get(user_id, 'unknown'),
+            'sensei': user_moods['sensei'].get(user_id, 'unknown')
+        }
+    }
+    return stats
