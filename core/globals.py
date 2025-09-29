@@ -11,9 +11,9 @@ OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 PERPLEXITY_API_KEY = os.getenv('PERPLEXITY_API_KEY')
 LLM_PROVIDER = os.getenv('LLM_PROVIDER', 'openai').lower()  # Default to openai
 
-# Intent configurations
+# Intent configurations for discord.py 2.x (Python 3.11 compatible)
 intents = discord.Intents.default()
-intents.message_content = True
+intents.message_content = True  # Required for reading message content
 
 # Global Variables (state)
 conversation_histories = {
