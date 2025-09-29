@@ -5,6 +5,7 @@ import random
 import discord
 from discord.ext import commands
 from core.globals import conversation_histories, SYSTEM_PROMPT_MIAW, create_mood_prompt, update_mood, get_llm_config, cleanup_old_conversations
+from core.gamification import gamification, get_level_title
 
 def clean_response(text):
     """Remove unwanted content like think tags from AI responses"""
@@ -231,6 +232,62 @@ def setup_miaw_command(bot):
 
             # Store the assistant's reply in history
             conversation_histories['miaw'][user_id].append({"role": "assistant", "content": answer})
+            
+            # Add gamification rewards
+            base_exp = 10  # Base EXP per chat
+            
+            # Bonus EXP for longer conversations
+            conversation_length = len(conversation_histories['miaw'][user_id])
+            length_bonus = min(conversation_length * 2, 20)  # Max 20 bonus
+            
+            # Bonus for special interactions
+            interaction_bonus = 0
+            message_lower = message.lower()
+            
+            # Check for special keywords/interactions
+            if any(word in message_lower for word in ['miaw', 'miawka', 'neko', 'cat']):
+                interaction_bonus += 5
+                gamification.increment_stat(str(ctx.author.id), 'miaw_interactions')
+            
+            if any(word in message_lower for word in ['tsundere', 'baka', 'stupid', 'dummy']):
+                interaction_bonus += 3
+                gamification.increment_stat(str(ctx.author.id), 'tsundere_reactions')
+            
+            if 'pat' in message_lower or '🤲' in message or '*pat*' in message_lower:
+                interaction_bonus += 8
+                gamification.increment_stat(str(ctx.author.id), 'pat_count')
+            
+            total_exp = base_exp + length_bonus + interaction_bonus
+            
+            # Give EXP and check for achievements/level ups
+            exp_result = gamification.add_exp(str(ctx.author.id), total_exp, "miaw_chat")
+            
+            # Show level up notification if applicable
+            if exp_result["level_ups"] > 0:
+                level_title = get_level_title(exp_result["new_level"])
+                level_up_msg = f"\n\n✨ **LEVEL UP!** ✨\n🎉 {ctx.author.display_name} naik ke Level {exp_result['new_level']} - {level_title}! 🎉"
+                
+                # Try to add level up message to the original reply
+                try:
+                    if len(answer + level_up_msg) <= 2000:
+                        # Edit the original message to include level up
+                        await ctx.message.add_reaction('⬆️')
+                        await ctx.channel.send(level_up_msg)
+                    else:
+                        await ctx.channel.send(level_up_msg)
+                except:
+                    pass
+            
+            # Check and announce new achievements
+            new_achievements = gamification.check_achievements(str(ctx.author.id))
+            if new_achievements:
+                for ach_id in new_achievements:
+                    achievement = gamification.achievements[ach_id]
+                    ach_msg = f"\n🏆 **ACHIEVEMENT UNLOCKED!** 🏆\n{achievement['icon']} **{achievement['name']}**\n{achievement['description']} (+{achievement['exp']} EXP)"
+                    try:
+                        await ctx.channel.send(ach_msg)
+                    except:
+                        pass
             
             # Periodic cleanup (10% chance after each interaction)
             if random.random() < 0.1:

@@ -8,6 +8,7 @@ from commands.sensei import setup_sensei_command
 from commands.switch import setup_switch_command
 from commands.utility import setup_utility_commands
 from commands.vtuber import setup_vtuber_commands
+from commands.gamification import setup_gamification_commands
 
 load_dotenv()
 
@@ -23,6 +24,7 @@ setup_sensei_command(bot)
 setup_switch_command(bot)
 setup_utility_commands(bot)
 setup_vtuber_commands(bot)
+setup_gamification_commands(bot)
 
 # Jalankan bot
 bot.run(DISCORD_TOKEN)

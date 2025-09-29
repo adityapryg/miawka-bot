@@ -5,6 +5,29 @@ import asyncio
 import random
 from discord.ext import commands
 from core.globals import get_llm_config, cleanup_old_conversations
+from core.gamification import gamification, get_level_title
+
+async def handle_vtuber_rewards(ctx, exp_result):
+    """Handle gamification rewards for VTuber commands"""
+    # Show level up notification
+    if exp_result["level_ups"] > 0:
+        level_title = get_level_title(exp_result["new_level"])
+        level_up_msg = f"🎬 **VTUBER LEVEL UP!** 🎬\n⭐ {ctx.author.display_name} reached Level {exp_result['new_level']} - {level_title}! ⭐"
+        try:
+            await ctx.channel.send(level_up_msg)
+        except:
+            pass
+    
+    # Check for new achievements
+    new_achievements = gamification.check_achievements(str(ctx.author.id))
+    if new_achievements:
+        for ach_id in new_achievements:
+            achievement = gamification.achievements[ach_id]
+            ach_msg = f"🏆 **ACHIEVEMENT UNLOCKED!** 🏆\n{achievement['icon']} **{achievement['name']}**\n{achievement['description']} (+{achievement['exp']} EXP)"
+            try:
+                await ctx.channel.send(ach_msg)
+            except:
+                pass
 
 def clean_response(text):
     """Remove unwanted content like think tags from AI responses"""
@@ -107,6 +130,13 @@ def setup_vtuber_commands(bot):
             
             for chunk in chunks[1:]:
                 await ctx.send(chunk)
+        
+        # Add gamification rewards for VTuber command usage
+        gamification.increment_stat(str(ctx.author.id), 'vtuber_commands')
+        exp_result = gamification.add_exp(str(ctx.author.id), 12, "vtuber_news")
+        
+        # Check for level ups and achievements
+        await handle_vtuber_rewards(ctx, exp_result)
 
     @bot.command(name='trending')
     @commands.cooldown(rate=2, per=120, type=commands.BucketType.user)
@@ -190,6 +220,11 @@ def setup_vtuber_commands(bot):
             embed.set_footer(text="Use !trending untuk X/Twitter trends • !gametrends untuk game populer")
         
         await ctx.reply(embed=embed)
+        
+        # Add gamification rewards
+        gamification.increment_stat(str(ctx.author.id), 'vtuber_commands')
+        exp_result = gamification.add_exp(str(ctx.author.id), 10, "trending_check")
+        await handle_vtuber_rewards(ctx, exp_result)
 
     @bot.command(name='gametrends')
     @commands.cooldown(rate=2, per=120, type=commands.BucketType.user)
@@ -248,6 +283,11 @@ def setup_vtuber_commands(bot):
         )
         embed.set_footer(text="Use !collab untuk opportunities • !culture untuk konten budaya")
         await ctx.reply(embed=embed)
+        
+        # Add gamification rewards
+        gamification.increment_stat(str(ctx.author.id), 'vtuber_commands')
+        exp_result = gamification.add_exp(str(ctx.author.id), 10, "game_trends")
+        await handle_vtuber_rewards(ctx, exp_result)
 
     @bot.command(name='culture', aliases=['budaya'])
     @commands.cooldown(rate=2, per=120, type=commands.BucketType.user)
@@ -312,6 +352,11 @@ def setup_vtuber_commands(bot):
         )
         embed.set_footer(text="Use !collab untuk networking • !trending untuk topik viral")
         await ctx.reply(embed=embed)
+        
+        # Add gamification rewards
+        gamification.increment_stat(str(ctx.author.id), 'vtuber_commands')
+        exp_result = gamification.add_exp(str(ctx.author.id), 10, "culture_content")
+        await handle_vtuber_rewards(ctx, exp_result)
 
     @bot.command(name='collab')
     @commands.cooldown(rate=2, per=180, type=commands.BucketType.user)
@@ -382,6 +427,11 @@ def setup_vtuber_commands(bot):
         )
         embed.set_footer(text="Use !vtubernews untuk update terbaru • Selalu verifikasi opportunities!")
         await ctx.reply(embed=embed)
+        
+        # Add gamification rewards
+        gamification.increment_stat(str(ctx.author.id), 'vtuber_commands')
+        exp_result = gamification.add_exp(str(ctx.author.id), 15, "collaboration_networking")  # Higher EXP for networking
+        await handle_vtuber_rewards(ctx, exp_result)
 
     # Error handlers for all VTuber commands
     @vtuber_news.error

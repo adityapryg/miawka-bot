@@ -4,6 +4,7 @@ import asyncio
 import random
 from discord.ext import commands
 from core.globals import conversation_histories, SYSTEM_PROMPT_TEACHER, create_mood_prompt, update_mood, get_llm_config, cleanup_old_conversations
+from core.gamification import gamification, get_level_title
 
 def clean_response(text):
     """Remove unwanted content like think tags from AI responses"""
@@ -140,6 +141,49 @@ def setup_sensei_command(bot):
 
             # Store the assistant's reply in history
             conversation_histories['sensei'][user_id].append({"role": "assistant", "content": answer})
+            
+            # Add gamification rewards for educational interactions
+            base_exp = 15  # Higher base EXP for learning
+            
+            # Bonus for educational keywords
+            educational_bonus = 0
+            message_lower = message.lower()
+            
+            educational_keywords = ['why', 'how', 'what', 'explain', 'teach', 'learn', 'study', 'understand', 'help']
+            for keyword in educational_keywords:
+                if keyword in message_lower:
+                    educational_bonus += 2
+                    break
+            
+            # Bonus for question marks (asking questions)
+            if '?' in message:
+                educational_bonus += 3
+            
+            # Track sensei interactions
+            gamification.increment_stat(str(ctx.author.id), 'sensei_interactions')
+            
+            total_exp = base_exp + educational_bonus
+            exp_result = gamification.add_exp(str(ctx.author.id), total_exp, "sensei_session")
+            
+            # Show level up notification
+            if exp_result["level_ups"] > 0:
+                level_title = get_level_title(exp_result["new_level"])
+                level_up_msg = f"\n\n📚 **KNOWLEDGE LEVEL UP!** 📚\n🎓 {ctx.author.display_name} advanced to Level {exp_result['new_level']} - {level_title}! 🎓"
+                try:
+                    await ctx.channel.send(level_up_msg)
+                except:
+                    pass
+            
+            # Check for new achievements
+            new_achievements = gamification.check_achievements(str(ctx.author.id))
+            if new_achievements:
+                for ach_id in new_achievements:
+                    achievement = gamification.achievements[ach_id]
+                    ach_msg = f"\n🏆 **ACHIEVEMENT UNLOCKED!** 🏆\n{achievement['icon']} **{achievement['name']}**\n{achievement['description']} (+{achievement['exp']} EXP)"
+                    try:
+                        await ctx.channel.send(ach_msg)
+                    except:
+                        pass
             
             # Periodic cleanup (10% chance after each interaction)
             if random.random() < 0.1:
