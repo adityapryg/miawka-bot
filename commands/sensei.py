@@ -60,7 +60,7 @@ def setup_sensei_command(bot):
             
             embed.add_field(
                 name="🔧 Commands Lainnya:",
-                value="• `!miaw` - Chat santai\n• `!stats` - Lihat statistik belajar\n• `!reset` - Reset riwayat pembelajaran",
+                value="• `!miaw` - Chat santai\n• `!stats` - Lihat statistik belajar\n• `!reset` - Reset riwayat pembelajaran\n• `!vtubernews` - Berita VTuber Indonesia\n• `!gametrends` - Game trending untuk konten",
                 inline=False
             )
             

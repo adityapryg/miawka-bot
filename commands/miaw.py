@@ -54,7 +54,7 @@ def setup_miaw_command(bot):
             
             embed.add_field(
                 name="🔧 Commands Lainnya:",
-                value="• `!sensei` - Untuk belajar serius\n• `!stats` - Lihat statistik kamu\n• `!reset` - Reset chat history\n• `!switch` - Ganti AI provider (admin)",
+                value="• `!sensei` - Untuk belajar serius\n• `!stats` - Lihat statistik kamu\n• `!reset` - Reset chat history\n• `!vtubernews` - Berita VTuber Indonesia\n• `!trending` - Topik viral Indonesia\n• `!switch` - Ganti AI provider (admin)",
                 inline=False
             )
             
